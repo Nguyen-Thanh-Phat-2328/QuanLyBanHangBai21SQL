@@ -1,31 +1,70 @@
 <?php
-	session_start();
-?>
+session_start();
 
+$messageEmail = $messagePass = $messageLoginSuccess = '';
+$err = false;
+
+if (isset($_POST['submit'])) {
+	if (empty($_POST['email'])) {
+		$messageEmail = 'Vui lòng nhập email';
+		$err = true;
+	}
+
+	if (empty($_POST['password'])) {
+		$messagePass = 'Vui lòng nhập pass';
+		$err = true;
+	}
+
+	if (!$err) {
+		$email = $_POST['email'];
+		$pass = md5($_POST['password']);
+
+		include 'connect.php';
+
+		$sql = "SELECT * FROM `user` WHERE `email` = '" . $email . "' AND `password` = '" . $pass . "'";
+		$result = $con->query($sql);
+
+		$data = [];
+		if ($result->num_rows > 0) {
+			while ($row = $result->fetch_assoc()) {
+				$data = $row;
+			}
+		}
+
+		if ($data) {
+			$messageLoginSuccess = 'Đăng nhập thành công';
+			$_SESSION['user'] = $data['id'];
+		} else {
+			$messageLoginSuccess = 'Đăng nhập thất bại';
+		}
+	}
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <title>Login | E-Shopper</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/font-awesome.min.css" rel="stylesheet">
-    <link href="css/prettyPhoto.css" rel="stylesheet">
-    <link href="css/price-range.css" rel="stylesheet">
-    <link href="css/animate.css" rel="stylesheet">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<title>Login | E-Shopper</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/prettyPhoto.css" rel="stylesheet">
+	<link href="css/price-range.css" rel="stylesheet">
+	<link href="css/animate.css" rel="stylesheet">
 	<link href="css/main.css" rel="stylesheet">
 	<link href="css/responsive.css" rel="stylesheet">
-    <!--[if lt IE 9]>
+	<!--[if lt IE 9]>
     <script src="js/html5shiv.js"></script>
     <script src="js/respond.min.js"></script>
-    <![endif]-->       
-    <link rel="shortcut icon" href="images/ico/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+    <![endif]-->
+	<link rel="shortcut icon" href="images/ico/favicon.ico">
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
 </head><!--/head-->
 
 <body>
@@ -55,7 +94,7 @@
 				</div>
 			</div>
 		</div><!--/header_top-->
-		
+
 		<div class="header-middle"><!--header-middle-->
 			<div class="container">
 				<div class="row">
@@ -74,7 +113,7 @@
 									<li><a href="">UK</a></li>
 								</ul>
 							</div>
-							
+
 							<div class="btn-group">
 								<button type="button" class="btn btn-default dropdown-toggle usa" data-toggle="dropdown">
 									DOLLAR
@@ -90,18 +129,28 @@
 					<div class="col-md-8 clearfix">
 						<div class="shop-menu clearfix pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href=""><i class="fa fa-user"></i> Account</a></li>
-								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
-								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
-								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="account.php"><i class="fa fa-user"></i> Account</a></li>';
+								}
+								?>
+								<li><a href="wishlist.php"><i class="fa fa-star"></i> Wishlist</a></li>
+								<li><a href="checkout.php"><i class="fa fa-crosshairs"></i> Checkout</a></li>
+								<li><a href="cart.php"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="logout.php"><i class="fa fa-lock"></i> Logout</a></li>';
+								} else {
+									echo '<li><a href="login.php"><i class="fa fa-lock"></i> Login</a></li>';
+								}
+								?>
 							</ul>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-middle-->
-	
+
 		<div class="header-bottom"><!--header-bottom-->
 			<div class="container">
 				<div class="row">
@@ -118,20 +167,20 @@
 							<ul class="nav navbar-nav collapse navbar-collapse">
 								<li><a href="index.html">Home</a></li>
 								<li class="dropdown"><a href="#">Shop<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="shop.html">Products</a></li>
-										<li><a href="product-details.html">Product Details</a></li> 
-										<li><a href="checkout.html">Checkout</a></li> 
-										<li><a href="cart.html">Cart</a></li> 
-										<li><a href="login.html" class="active">Login</a></li> 
-                                    </ul>
-                                </li> 
+									<ul role="menu" class="sub-menu">
+										<li><a href="shop.html">Products</a></li>
+										<li><a href="product-details.html">Product Details</a></li>
+										<li><a href="checkout.html">Checkout</a></li>
+										<li><a href="cart.html">Cart</a></li>
+										<li><a href="login.html" class="active">Login</a></li>
+									</ul>
+								</li>
 								<li class="dropdown"><a href="#">Blog<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="blog.html">Blog List</a></li>
+									<ul role="menu" class="sub-menu">
+										<li><a href="blog.html">Blog List</a></li>
 										<li><a href="blog-single.html">Blog Single</a></li>
-                                    </ul>
-                                </li> 
+									</ul>
+								</li>
 								<li><a href="404.html">404</a></li>
 								<li><a href="contact-us.html">Contact</a></li>
 							</ul>
@@ -139,7 +188,7 @@
 					</div>
 					<div class="col-sm-3">
 						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
+							<input type="text" placeholder="Search" />
 						</div>
 					</div>
 				</div>
@@ -147,47 +196,6 @@
 		</div><!--/header-bottom-->
 	</header><!--/header-->
 
-	<?php
-		$messageEmail = $messagePass = $messageLoginSuccess = '';
-		$err = false;
-
-		if (isset($_POST['submit'])) {
-			if (empty($_POST['email'])) {
-				$messageEmail = 'Vui lòng nhập email';
-				$err = true;
-			}
-
-			if (empty($_POST['password'])) {
-				$messagePass = 'Vui lòng nhập pass';
-				$err = true;
-			}
-
-			if(!$err) {
-				$email = $_POST['email'];
-				$pass = md5($_POST['password']);
-
-				include 'connect.php';
-
-				$sql = "SELECT * FROM `user` WHERE `email` = '".$email."' AND `password` = '".$pass."'";
-				$result = $con -> query($sql);
-
-				$data = [];
-				if($result -> num_rows > 0) {
-					while ($row = $result -> fetch_assoc()) {
-						$data = $row;
-					}
-				}
-
-				if($data) {
-					$messageLoginSuccess = 'Đăng nhập thành công';
-					$_SESSION['user'] = $data['id'];
-				} else {
-					$messageLoginSuccess = 'Đăng nhập thất bại';
-				}
-			}
-		}
-	?>
-	
 	<section id="form"><!--form-->
 		<div class="container">
 			<div class="row">
@@ -200,7 +208,7 @@
 							<input type="text" name="password" placeholder="pass" />
 							<p><?php echo $messagePass ?></p>
 							<span>
-								<input type="checkbox" class="checkbox"> 
+								<input type="checkbox" class="checkbox">
 								Keep me signed in
 							</span>
 							<button type="submit" name="submit" class="btn btn-default">Login</button>
@@ -211,8 +219,8 @@
 			</div>
 		</div>
 	</section><!--/form-->
-	
-	
+
+
 	<footer id="footer"><!--Footer-->
 		<div class="footer-top">
 			<div class="container">
@@ -238,7 +246,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -253,7 +261,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -268,7 +276,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -293,7 +301,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-widget">
 			<div class="container">
 				<div class="row">
@@ -355,11 +363,11 @@
 							</form>
 						</div>
 					</div>
-					
+
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-bottom">
 			<div class="container">
 				<div class="row">
@@ -368,16 +376,17 @@
 				</div>
 			</div>
 		</div>
-		
-	</footer><!--/Footer-->
-	
 
-  
-    <script src="js/jquery.js"></script>
+	</footer><!--/Footer-->
+
+
+
+	<script src="js/jquery.js"></script>
 	<script src="js/price-range.js"></script>
-    <script src="js/jquery.scrollUp.min.js"></script>
+	<script src="js/jquery.scrollUp.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.prettyPhoto.js"></script>
-    <script src="js/main.js"></script>
+	<script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
 </body>
+
 </html>

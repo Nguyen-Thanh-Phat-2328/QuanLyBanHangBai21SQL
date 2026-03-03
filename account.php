@@ -1,27 +1,108 @@
+<?php
+	session_start();
+
+	if(isset($_SESSION['user'])) {
+		$userId = $_SESSION['user'];
+	} else {
+		header('Location: login.php');
+		exit();
+	}
+
+	include 'connect.php';
+
+	$sqlGetUser = "SELECT * FROM `user` WHERE `id` = '".$userId."';";
+	$result = $con -> query($sqlGetUser);
+	$user = $result -> fetch_assoc();
+
+	$messageEmail = $messageName = $messagePass = $messageAvatar = $messageRegisterSuccess = '';
+	$err = false;
+
+	if (isset($_POST['submit'])) {
+		if (empty($_POST['email'])) {
+			$messageEmail = 'Vui lòng nhập email';
+			$err = true;
+		}
+
+		if (empty($_POST['password'])) {
+			$messagePass = 'Vui lòng nhập pass';
+			$err = true;
+		}
+
+		if (empty($_POST['name'])) {
+			$messageName = 'Vui lòng nhập name';
+			$err = true;
+		}
+
+
+		if (!empty($_FILES['avatar']['name'])) {
+			if ($_FILES['avatar']['error'] > 0) {
+				$messageAvatar = 'File upload bị lỗi';
+				$err = true;
+			} else {
+				if ($_FILES['avatar']['size'] >= 1024 * 1024) {
+					$messageAvatar = 'File ảnh vượt quá 1MB';
+					$err = true;
+				} else {
+					$listNameImg = ['png', 'jpg', 'jpeg', 'PNG', 'JPG', 'JPEG'];
+					$explodeFileName = explode('.', $_FILES['avatar']['name']);
+					$exFileName = $explodeFileName[count($explodeFileName) - 1];
+					if (!in_array($exFileName, $listNameImg)) {
+						$messageAvatar = 'Không phải file ảnh';
+						$err = true;
+					} else {
+						move_uploaded_file($_FILES['avatar']['tmp_name'], './upload/avatar/' . $_FILES['avatar']['name']);
+					}
+				}
+			}
+		} else {
+			$messageAvatar = 'Vui lòng chọn file ảnh';
+			$err = true;
+		}
+
+
+		if (!$err) {
+			$email = $_POST['email'];
+			$pass = md5($_POST['password']);
+			$name = $_POST['name'];
+			$avatar = $_FILES['avatar']['name'];
+
+			$sql = "UPDATE `user` SET `email` = '".$email."', `password` = '".$pass."', `name` = '".$name."', `avatar` = '".$avatar."' WHERE `id` = '".$userId."';";
+
+			if($result = $con -> query($sql)) {
+				$messageRegisterSuccess = 'Cập nhật thành công';
+			} else {
+				$messageRegisterSuccess = 'Cập nhật thất bại';
+			}
+		}
+	}
+
+
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <title>Blog | E-Shopper</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/font-awesome.min.css" rel="stylesheet">
-    <link href="css/prettyPhoto.css" rel="stylesheet">
-    <link href="css/price-range.css" rel="stylesheet">
-    <link href="css/animate.css" rel="stylesheet">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<title>Blog | E-Shopper</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/prettyPhoto.css" rel="stylesheet">
+	<link href="css/price-range.css" rel="stylesheet">
+	<link href="css/animate.css" rel="stylesheet">
 	<link href="css/main.css" rel="stylesheet">
 	<link href="css/responsive.css" rel="stylesheet">
-    <!--[if lt IE 9]>
+	<!--[if lt IE 9]>
     <script src="js/html5shiv.js"></script>
     <script src="js/respond.min.js"></script>
-    <![endif]-->       
-    <link rel="shortcut icon" href="images/ico/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+    <![endif]-->
+	<link rel="shortcut icon" href="images/ico/favicon.ico">
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
 </head><!--/head-->
 
 <body>
@@ -51,7 +132,7 @@
 				</div>
 			</div>
 		</div><!--/header_top-->
-		
+
 		<div class="header-middle"><!--header-middle-->
 			<div class="container">
 				<div class="row">
@@ -70,7 +151,7 @@
 									<li><a href="">UK</a></li>
 								</ul>
 							</div>
-							
+
 							<div class="btn-group">
 								<button type="button" class="btn btn-default dropdown-toggle usa" data-toggle="dropdown">
 									DOLLAR
@@ -86,18 +167,28 @@
 					<div class="col-md-8 clearfix">
 						<div class="shop-menu clearfix pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href=""><i class="fa fa-user"></i> Account</a></li>
-								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
-								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
-								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+								<?php
+									if (isset($_SESSION['user'])) {
+										echo '<li><a href="account.php"><i class="fa fa-user"></i> Account</a></li>';
+									}
+									?>
+									<li><a href="wishlist.php"><i class="fa fa-star"></i> Wishlist</a></li>
+									<li><a href="checkout.php"><i class="fa fa-crosshairs"></i> Checkout</a></li>
+									<li><a href="cart.php"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+									if (isset($_SESSION['user'])) {
+										echo '<li><a href="logout.php"><i class="fa fa-lock"></i> Logout</a></li>';
+									} else {
+										echo '<li><a href="login.php"><i class="fa fa-lock"></i> Login</a></li>';
+									}
+								?>
 							</ul>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-middle-->
-	
+
 		<div class="header-bottom"><!--header-bottom-->
 			<div class="container">
 				<div class="row">
@@ -114,20 +205,20 @@
 							<ul class="nav navbar-nav collapse navbar-collapse">
 								<li><a href="index.html">Home</a></li>
 								<li class="dropdown"><a href="#">Shop<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="shop.html">Products</a></li>
-										<li><a href="product-details.html">Product Details</a></li> 
-										<li><a href="checkout.html">Checkout</a></li> 
-										<li><a href="cart.html">Cart</a></li> 
-										<li><a href="login.html">Login</a></li> 
-                                    </ul>
-                                </li> 
+									<ul role="menu" class="sub-menu">
+										<li><a href="shop.html">Products</a></li>
+										<li><a href="product-details.html">Product Details</a></li>
+										<li><a href="checkout.html">Checkout</a></li>
+										<li><a href="cart.html">Cart</a></li>
+										<li><a href="login.html">Login</a></li>
+									</ul>
+								</li>
 								<li class="dropdown"><a href="#" class="active">Blog<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="blog.html" class="active">Blog List</a></li>
+									<ul role="menu" class="sub-menu">
+										<li><a href="blog.html" class="active">Blog List</a></li>
 										<li><a href="blog-single.html">Blog Single</a></li>
-                                    </ul>
-                                </li> 
+									</ul>
+								</li>
 								<li><a href="404.html">404</a></li>
 								<li><a href="contact-us.html">Contact</a></li>
 							</ul>
@@ -135,14 +226,14 @@
 					</div>
 					<div class="col-sm-3">
 						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
+							<input type="text" placeholder="Search" />
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-bottom-->
 	</header><!--/header-->
-	
+
 	<section>
 		<div class="container">
 			<div class="row">
@@ -150,8 +241,8 @@
 					<div class="left-sidebar">
 						<h2>Account</h2>
 						<div class="panel-group category-products" id="accordian"><!--category-productsr-->
-							
-							
+
+
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<h4 class="panel-title"><a href="#">account</a></h4>
@@ -162,30 +253,36 @@
 									<h4 class="panel-title"><a href="#">My product</a></h4>
 								</div>
 							</div>
-							
+
 						</div><!--/category-products-->
-					
-						
+
+
 					</div>
 				</div>
 				<div class="col-sm-9">
 					<div class="blog-post-area">
 						<h2 class="title text-center">Update user</h2>
-						 <div class="signup-form"><!--sign up form-->
-						<h2>New User Signup!</h2>
-						<form action="#">
-							<input type="text" placeholder="Name"/>
-							<input type="email" placeholder="Email Address"/>
-							<input type="password" placeholder="Password"/>
-							<button type="submit" class="btn btn-default">Signup</button>
-						</form>
-					</div>
+						<div class="signup-form"><!--sign up form-->
+							<h2>User Update!</h2>
+							<form action="" method="post" enctype="multipart/form-data">
+								<input type="email" name="email" value="<?php echo $user['email'] ?>" placeholder="Email">
+								<p><?php echo $messageEmail ?></p>
+								<input type="text" name="password" placeholder="khong nhập nếu khong đổi">
+								<p><?php echo $messagePass ?></p>
+								<input type="text" name="name" value="<?php echo $user['name'] ?>" placeholder="Name" />
+								<p><?php echo $messageName ?></p>
+								<input type="file" name="avatar" value="<?php echo $user['avatar'] ?>" placeholder="Avatar" />
+								<p><?php echo $messageAvatar ?></p>
+								<button type="submit" name="submit" class="btn btn-default">Update</button>
+							</form>
+							<p><?php echo $messageRegisterSuccess ?></p>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
-	
+
 	<footer id="footer"><!--Footer-->
 		<div class="footer-top">
 			<div class="container">
@@ -211,7 +308,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -226,7 +323,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -241,7 +338,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -266,7 +363,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-widget">
 			<div class="container">
 				<div class="row">
@@ -328,11 +425,11 @@
 							</form>
 						</div>
 					</div>
-					
+
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-bottom">
 			<div class="container">
 				<div class="row">
@@ -341,16 +438,17 @@
 				</div>
 			</div>
 		</div>
-		
-	</footer><!--/Footer-->
-	
 
-  
-    <script src="js/jquery.js"></script>
+	</footer><!--/Footer-->
+
+
+
+	<script src="js/jquery.js"></script>
 	<script src="js/price-range.js"></script>
 	<script src="js/jquery.scrollUp.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.prettyPhoto.js"></script>
-    <script src="js/main.js"></script>
+	<script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
 </body>
+
 </html>
