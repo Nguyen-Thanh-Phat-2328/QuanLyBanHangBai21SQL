@@ -1,3 +1,72 @@
+<?php
+	session_start();
+	if(isset($_SESSION['user'])) {
+		$userId = $_SESSION['user'];
+	} else {
+		header('Location: login.php');
+		exit();
+	}
+
+	$messageSuccess = $userId;
+
+	$messageTitle = $messagePrice = $messageImage = $messageSuccess = "";
+	$err = false;
+
+	if(isset($_POST['submit'])) {
+		if(empty($_POST['title'])) {
+			$messageTitle = "Vui lòng nhập title";
+			$err = true;
+		}
+		if(empty($_POST['price'])) {
+			$messagePrice = "Vui lòng nhập price";
+			$err = true;
+		}
+
+		if (!empty($_FILES['image']['name'])) {
+			if ($_FILES['image']['error'] > 0) {
+				$messageImage = 'File upload bị lỗi';
+				$err = true;
+			} else {
+				if ($_FILES['image']['size'] >= 1024 * 1024) {
+					$messageImage = 'File ảnh vượt quá 1MB';
+					$err = true;
+				} else {
+					$listNameImg = ['png', 'jpg', 'jpeg', 'PNG', 'JPG', 'JPEG'];
+					$explodeFileName = explode('.', $_FILES['image']['name']);
+					$exFileName = $explodeFileName[count($explodeFileName) - 1];
+					if (!in_array($exFileName, $listNameImg)) {
+						$messageImage = 'Không phải file ảnh';
+						$err = true;
+					} else {
+						move_uploaded_file($_FILES['image']['tmp_name'], './upload/product/' . $_FILES['image']['name']);
+					}
+				}
+			}
+		} 
+		else {
+			$messageImage = 'Vui lòng chọn file ảnh';
+			$err = true;
+		}
+
+		if(!$err) {
+			$title = $_POST['title'];
+			$price = $_POST['price'];
+			$image = $_FILES['image']['name'];
+
+			include 'connect.php';
+			
+			$sql = "INSERT INTO `product` (`title`, `price`, `image`, `id_user`) VALUES ('" . $title . "', '" . $price . "', '" . $image . "', '" . $userId . "');";
+			
+			if($result = $con -> query($sql)) {
+				$messageSuccess = "Thêm sản phẩm thành công";
+				header('Location: my-product.php');
+				exit();
+			} else {
+				$messageSuccess = "Thêm sản phẩm thất bại";
+			}
+		}
+	}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,11 +155,21 @@
 					<div class="col-md-8 clearfix">
 						<div class="shop-menu clearfix pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href=""><i class="fa fa-user"></i> Account</a></li>
-								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
-								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
-								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="account.php"><i class="fa fa-user"></i> Account</a></li>';
+								}
+								?>
+								<li><a href="wishlist.php"><i class="fa fa-star"></i> Wishlist</a></li>
+								<li><a href="checkout.php"><i class="fa fa-crosshairs"></i> Checkout</a></li>
+								<li><a href="cart.php"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="logout.php"><i class="fa fa-lock"></i> Logout</a></li>';
+								} else {
+									echo '<li><a href="login.php"><i class="fa fa-lock"></i> Login</a></li>';
+								}
+								?>
 							</ul>
 						</div>
 					</div>
@@ -154,12 +233,12 @@
 							
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">account</a></h4>
+									<h4 class="panel-title"><a href="account.php">account</a></h4>
 								</div>
 							</div>
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">My product</a></h4>
+									<h4 class="panel-title"><a href="my-product.php">My product</a></h4>
 								</div>
 							</div>
 							
@@ -169,81 +248,21 @@
 					</div>
 				</div>
 				<div class="col-sm-9">
-					<div class="table-responsive cart_info">
-						<table class="table table-condensed">
-							<thead>
-								<tr class="cart_menu">
-									<td class="image">image</td>
-									<td class="description">name</td>
-									<td class="price">price</td>
-									
-									<td class="total">action</td>
-									
-								</tr>
-							</thead>
-							<tbody>
-
-								
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-								<tr>
-									<td class="cart_product">
-										<a href=""><img src="images/cart/one.png" alt=""></a>
-									</td>
-									<td class="cart_description">
-										<h4><a href="">Colorblock Scuba</a></h4>
-										
-									</td>
-									<td class="cart_price">
-										<p>$59</p>
-									</td>
-									
-									<td class="cart_total">
-										<a>edit</a>
-										<a>delete</a>
-									</td>
-									
-								</tr>
-
-
-
-							
-							</tbody>
-						</table>
+					<div class="blog-post-area">
+						<h2 class="title text-center">App product</h2>
+						 <div class="signup-form"><!--sign up form-->
+						<h2>Add new product!</h2>
+						<form action="" method="post" enctype="multipart/form-data">
+							<input type="text" name="title" placeholder="Title"/>
+							<p><?php echo $messageTitle ?></p>
+							<input type="number" name="price" placeholder="Price"/>
+							<p><?php echo $messagePrice ?></p>
+							<input type="file" name="image"/>
+							<p><?php echo $messageImage ?></p>
+							<button type="submit" name="submit" class="btn btn-default">Add Product</button>
+						</form>
+						<p><?php echo $messageSuccess ?></p>
+					</div>
 					</div>
 				</div>
 			</div>

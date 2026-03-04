@@ -1,27 +1,50 @@
+<?php
+session_start();
+if (isset($_SESSION['user'])) {
+	$userId = $_SESSION['user'];
+} else {
+	header('Location: login.php');
+	exit();
+}
+
+include 'connect.php';
+
+$sql = "SELECT * FROM `product` WHERE id_user = '" . $userId . "';";
+$result = $con->query($sql);
+$data = [];
+if ($result->num_rows > 0) {
+	while ($row = $result->fetch_assoc()) {
+		$data[] = $row;
+	}
+}
+
+// print_r($data);
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <title>Blog | E-Shopper</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/font-awesome.min.css" rel="stylesheet">
-    <link href="css/prettyPhoto.css" rel="stylesheet">
-    <link href="css/price-range.css" rel="stylesheet">
-    <link href="css/animate.css" rel="stylesheet">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<title>Blog | E-Shopper</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/prettyPhoto.css" rel="stylesheet">
+	<link href="css/price-range.css" rel="stylesheet">
+	<link href="css/animate.css" rel="stylesheet">
 	<link href="css/main.css" rel="stylesheet">
 	<link href="css/responsive.css" rel="stylesheet">
-    <!--[if lt IE 9]>
+	<!--[if lt IE 9]>
     <script src="js/html5shiv.js"></script>
     <script src="js/respond.min.js"></script>
-    <![endif]-->       
-    <link rel="shortcut icon" href="images/ico/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+    <![endif]-->
+	<link rel="shortcut icon" href="images/ico/favicon.ico">
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
 </head><!--/head-->
 
 <body>
@@ -51,7 +74,7 @@
 				</div>
 			</div>
 		</div><!--/header_top-->
-		
+
 		<div class="header-middle"><!--header-middle-->
 			<div class="container">
 				<div class="row">
@@ -70,7 +93,7 @@
 									<li><a href="">UK</a></li>
 								</ul>
 							</div>
-							
+
 							<div class="btn-group">
 								<button type="button" class="btn btn-default dropdown-toggle usa" data-toggle="dropdown">
 									DOLLAR
@@ -86,18 +109,28 @@
 					<div class="col-md-8 clearfix">
 						<div class="shop-menu clearfix pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href=""><i class="fa fa-user"></i> Account</a></li>
-								<li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
-								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
-								<li><a href="cart.html"><i class="fa fa-shopping-cart"></i> Cart</a></li>
-								<li><a href="login.html"><i class="fa fa-lock"></i> Login</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="account.php"><i class="fa fa-user"></i> Account</a></li>';
+								}
+								?>
+								<li><a href="wishlist.php"><i class="fa fa-star"></i> Wishlist</a></li>
+								<li><a href="checkout.php"><i class="fa fa-crosshairs"></i> Checkout</a></li>
+								<li><a href="cart.php"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+								<?php
+								if (isset($_SESSION['user'])) {
+									echo '<li><a href="logout.php"><i class="fa fa-lock"></i> Logout</a></li>';
+								} else {
+									echo '<li><a href="login.php"><i class="fa fa-lock"></i> Login</a></li>';
+								}
+								?>
 							</ul>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-middle-->
-	
+
 		<div class="header-bottom"><!--header-bottom-->
 			<div class="container">
 				<div class="row">
@@ -114,20 +147,20 @@
 							<ul class="nav navbar-nav collapse navbar-collapse">
 								<li><a href="index.html">Home</a></li>
 								<li class="dropdown"><a href="#">Shop<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="shop.html">Products</a></li>
-										<li><a href="product-details.html">Product Details</a></li> 
-										<li><a href="checkout.html">Checkout</a></li> 
-										<li><a href="cart.html">Cart</a></li> 
-										<li><a href="login.html">Login</a></li> 
-                                    </ul>
-                                </li> 
+									<ul role="menu" class="sub-menu">
+										<li><a href="shop.html">Products</a></li>
+										<li><a href="product-details.html">Product Details</a></li>
+										<li><a href="checkout.html">Checkout</a></li>
+										<li><a href="cart.html">Cart</a></li>
+										<li><a href="login.html">Login</a></li>
+									</ul>
+								</li>
 								<li class="dropdown"><a href="#" class="active">Blog<i class="fa fa-angle-down"></i></a>
-                                    <ul role="menu" class="sub-menu">
-                                        <li><a href="blog.html" class="active">Blog List</a></li>
+									<ul role="menu" class="sub-menu">
+										<li><a href="blog.html" class="active">Blog List</a></li>
 										<li><a href="blog-single.html">Blog Single</a></li>
-                                    </ul>
-                                </li> 
+									</ul>
+								</li>
 								<li><a href="404.html">404</a></li>
 								<li><a href="contact-us.html">Contact</a></li>
 							</ul>
@@ -135,14 +168,14 @@
 					</div>
 					<div class="col-sm-3">
 						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
+							<input type="text" placeholder="Search" />
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-bottom-->
 	</header><!--/header-->
-	
+
 	<section>
 		<div class="container">
 			<div class="row">
@@ -150,42 +183,79 @@
 					<div class="left-sidebar">
 						<h2>Account</h2>
 						<div class="panel-group category-products" id="accordian"><!--category-productsr-->
-							
-							
+
+
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">account</a></h4>
+									<h4 class="panel-title"><a href="account.php">account</a></h4>
 								</div>
 							</div>
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">My product</a></h4>
+									<h4 class="panel-title"><a href="my-product.php">My product</a></h4>
 								</div>
 							</div>
-							
+
 						</div><!--/category-products-->
-					
-						
+
+
 					</div>
 				</div>
 				<div class="col-sm-9">
-					<div class="blog-post-area">
-						<h2 class="title text-center">Update user</h2>
-						 <div class="signup-form"><!--sign up form-->
-						<h2>New User Signup!</h2>
-						<form action="#">
-							<input type="text" placeholder="Name"/>
-							<input type="email" placeholder="Email Address"/>
-							<input type="password" placeholder="Password"/>
-							<button type="submit" class="btn btn-default">Signup</button>
-						</form>
-					</div>
+					<div class="table-responsive cart_info">
+						<table class="table table-condensed">
+							<thead>
+								<tr class="cart_menu">
+									<td class="image">image</td>
+									<td class="description">name</td>
+									<td class="price">price</td>
+
+									<td class="total">action</td>
+
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								if (empty($data)) {
+									echo '<tr><td colspan="4" style="text-align: center; color: red;">Chưa có sản phẩm nào</td></tr>';
+								} else {
+									foreach ($data as $key => $value) {
+								?>
+										<tr>
+											<td class="cart_product">
+												<a href=""><img src="upload/product/<?php echo $value['image']; ?>" alt=""></a>
+											</td>
+											<td class="cart_description">
+												<h4><a href=""><?php echo $value['title']; ?></a></h4>
+
+											</td>
+											<td class="cart_price">
+												<p>$<?php echo $value['price']; ?></p>
+											</td>
+
+											<td class="cart_total">
+												<a>edit</a>
+												<a>delete</a>
+											</td>
+
+										</tr>
+								<?php
+									}
+								}
+								?>
+
+
+
+
+							</tbody>
+						</table>
+						<a href="add-product.php"><button>Add Product</button></a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
-	
+
 	<footer id="footer"><!--Footer-->
 		<div class="footer-top">
 			<div class="container">
@@ -211,7 +281,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -226,7 +296,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -241,7 +311,7 @@
 								<h2>24 DEC 2014</h2>
 							</div>
 						</div>
-						
+
 						<div class="col-sm-3">
 							<div class="video-gallery text-center">
 								<a href="#">
@@ -266,7 +336,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-widget">
 			<div class="container">
 				<div class="row">
@@ -328,11 +398,11 @@
 							</form>
 						</div>
 					</div>
-					
+
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="footer-bottom">
 			<div class="container">
 				<div class="row">
@@ -341,16 +411,17 @@
 				</div>
 			</div>
 		</div>
-		
-	</footer><!--/Footer-->
-	
 
-  
-    <script src="js/jquery.js"></script>
+	</footer><!--/Footer-->
+
+
+
+	<script src="js/jquery.js"></script>
 	<script src="js/price-range.js"></script>
 	<script src="js/jquery.scrollUp.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.prettyPhoto.js"></script>
-    <script src="js/main.js"></script>
+	<script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
 </body>
+
 </html>

@@ -24,18 +24,17 @@ if (isset($_POST['submit'])) {
 		$sql = "SELECT * FROM `user` WHERE `email` = '" . $email . "' AND `password` = '" . $pass . "'";
 		$result = $con->query($sql);
 
-		$data = [];
+		
 		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$data = $row;
-			}
-		}
+			// thanh cong 
+			$data = $result->fetch_assoc();
 
-		if ($data) {
-			$messageLoginSuccess = 'Đăng nhập thành công';
-			$_SESSION['user'] = $data['id'];
-		} else {
-			$messageLoginSuccess = 'Đăng nhập thất bại';
+			if ($data) {
+				$messageLoginSuccess = 'Đăng nhập thành công';
+				$_SESSION['user'] = $data['id'];
+			} else {
+				$messageLoginSuccess = 'Đăng nhập thất bại';
+			}
 		}
 	}
 }

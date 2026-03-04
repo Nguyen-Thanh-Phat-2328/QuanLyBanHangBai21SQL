@@ -10,6 +10,7 @@
 
 	include 'connect.php';
 
+	//lấy thong tin user
 	$sqlGetUser = "SELECT * FROM `user` WHERE `id` = '".$userId."';";
 	$result = $con -> query($sqlGetUser);
 	$user = $result -> fetch_assoc();
@@ -18,21 +19,20 @@
 	$err = false;
 
 	if (isset($_POST['submit'])) {
-		if (empty($_POST['email'])) {
-			$messageEmail = 'Vui lòng nhập email';
-			$err = true;
-		}
+		// if (empty($_POST['email'])) {
+		// 	$messageEmail = 'Vui lòng nhập email';
+		// 	$err = true;
+		// }
 
-		if (empty($_POST['password'])) {
-			$messagePass = 'Vui lòng nhập pass';
-			$err = true;
-		}
+		// if (empty($_POST['password'])) {
+		// 	$messagePass = 'Vui lòng nhập pass';
+		// 	$err = true;
+		// }
 
-		if (empty($_POST['name'])) {
-			$messageName = 'Vui lòng nhập name';
-			$err = true;
-		}
-
+		// if (empty($_POST['name'])) {
+		// 	$messageName = 'Vui lòng nhập name';
+		// 	$err = true;
+		// }
 
 		if (!empty($_FILES['avatar']['name'])) {
 			if ($_FILES['avatar']['error'] > 0) {
@@ -54,17 +54,43 @@
 					}
 				}
 			}
-		} else {
-			$messageAvatar = 'Vui lòng chọn file ảnh';
-			$err = true;
-		}
-
+		} 
+		// else {
+		// 	$messageAvatar = 'Vui lòng chọn file ảnh';
+		// 	$err = true;
+		// }
 
 		if (!$err) {
-			$email = $_POST['email'];
-			$pass = md5($_POST['password']);
-			$name = $_POST['name'];
-			$avatar = $_FILES['avatar']['name'];
+			if(empty($_POST['email'])) {
+				$email = $user['email'];
+			} else {
+				$email = $_POST['email'];
+			}
+
+			if(empty($_POST['password'])) {
+				$pass = $user['password'];
+			} else {
+				$pass = md5($_POST['password']);
+			}
+			
+			if(empty($_POST['name'])) {
+				$name = $user['name'];
+			} else {
+				$name = $_POST['name'];
+			}
+
+			if(empty($_POST['name'])) {
+				$name = $user['name'];
+			} else {
+				$name = $_POST['name'];
+			}
+
+			if(empty($_FILES['avatar']['name'])) {
+				$avatar = $user['avatar'];
+			} else {
+				$avatar = $_FILES['avatar']['name'];
+			}
+			
 
 			$sql = "UPDATE `user` SET `email` = '".$email."', `password` = '".$pass."', `name` = '".$name."', `avatar` = '".$avatar."' WHERE `id` = '".$userId."';";
 
@@ -245,12 +271,12 @@
 
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">account</a></h4>
+									<h4 class="panel-title"><a href="account.php">account</a></h4>
 								</div>
 							</div>
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<h4 class="panel-title"><a href="#">My product</a></h4>
+									<h4 class="panel-title"><a href="my-product.php">My product</a></h4>
 								</div>
 							</div>
 
