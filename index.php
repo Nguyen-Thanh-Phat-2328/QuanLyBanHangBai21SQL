@@ -406,7 +406,7 @@ if ($result->num_rows > 0) {
 											<div class="overlay-content">
 												<h2>$<?php echo $value['price']; ?></h2>
 												<p><?php echo $value['title']; ?></p>
-												<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+												<a id="btn-add-to-cart" id-product="<?php echo $value['id']; ?>" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
 											</div>
 										</div>
 									</div>
@@ -980,6 +980,7 @@ if ($result->num_rows > 0) {
 	<script src="js/price-range.js"></script>
 	<script src="js/jquery.prettyPhoto.js"></script>
 	<script src="js/main.js"></script>
+	<script src="js/add-to-cart.js"></script>
 </body>
 
 </html>
