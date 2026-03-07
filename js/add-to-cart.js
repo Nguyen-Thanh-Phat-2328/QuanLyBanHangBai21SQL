@@ -18,6 +18,10 @@ btnAddToCart.forEach(function(btn) {
             body: JSON.stringify(idProduct)
         });
 
-        const data = await response.json();
+        const totalCartNew = document.querySelector('.cart-count');
+        const totalCartOld = document.querySelector('.cart-count').textContent;
+
+        totalCartNew.textContent = parseInt(totalCartOld) + 1;
+        // const data = await response.json();
     });
 });
